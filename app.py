@@ -1,5 +1,4 @@
 import streamlit as st
-import os
 from google import genai
 from google.genai import types
 
@@ -16,8 +15,11 @@ st.markdown("""
 st.title("🏥 PhysioCare Express Triage")
 st.caption("Doctor-verified first-aid & local care guidance for sports and physio injuries")
 
-# API Key Handling (Reads from Streamlit Secrets or Manual Input)
-api_key = st.secrets.get("GEMINI_API_KEY", None)
+# Safe Secrets Handling
+try:
+    api_key = st.secrets["GEMINI_API_KEY"]
+except Exception:
+    api_key = None
 
 if not api_key:
     api_key = st.sidebar.text_input("Enter Gemini API Key", type="password")
@@ -46,7 +48,7 @@ if api_key:
             if not (audio_val or text_val or img_val):
                 st.warning("Please provide voice, text, or an image.")
             else:
-                with st.spinner("Analyzing condition with Gemini Pro..."):
+                with st.spinner("Analyzing condition with Gemini..."):
                     system_instruction = """
                     You are an expert Musculoskeletal & Sports Physical Therapy Triage Assistant.
                     CRITICAL RULE: Respond ENTIRELY in the EXACT SAME language/dialect as the user (Urdu, Roman Urdu, English, etc.).
@@ -57,18 +59,19 @@ if api_key:
                     """
                     
                     contents = []
-                    if text_val: contents.append(text_val)
+                    if text_val: 
+                        contents.append(text_val)
                     if audio_val:
                         contents.append(types.Part.from_bytes(data=audio_val.read(), mime_type="audio/wav"))
                     if img_val:
                         contents.append(types.Part.from_bytes(data=img_val.read(), mime_type=img_val.type))
                     
                     try:
-                       response = client.models.generate_content(
-    model='gemini-1.5-flash',
-    contents=contents,
-    config=types.GenerateContentConfig(system_instruction=system_instruction)
-)
+                        response = client.models.generate_content(
+                            model='gemini-1.5-flash',
+                            contents=contents,
+                            config=types.GenerateContentConfig(system_instruction=system_instruction)
+                        )
                         st.markdown(response.text)
                         
                         st.subheader("📍 Nearby Clinics (< 5km)")
