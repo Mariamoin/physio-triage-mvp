@@ -64,11 +64,11 @@ if api_key:
                         contents.append(types.Part.from_bytes(data=img_val.read(), mime_type=img_val.type))
                     
                     try:
-                        response = client.models.generate_content(
-                            model='gemini-1.5-pro',
-                            contents=contents,
-                            config=types.GenerateContentConfig(system_instruction=system_instruction)
-                        )
+                       response = client.models.generate_content(
+    model='gemini-1.5-flash',
+    contents=contents,
+    config=types.GenerateContentConfig(system_instruction=system_instruction)
+)
                         st.markdown(response.text)
                         
                         st.subheader("📍 Nearby Clinics (< 5km)")
